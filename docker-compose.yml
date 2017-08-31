@@ -1,0 +1,61 @@
+version: "2"
+services:
+  hcm-proxy:
+    image: registry.cn-beijing.aliyuncs.com/hcmcloud/hcm_proxy:latest
+    container_name: dev_proxy
+    ports:
+      - "80:80"
+    environment:
+      - 'HCM_BACKEND_HCM_CORE=${HCM_BACKEND_HCM_CORE}'
+      - 'HCM_BACKEND_HCM_CLOUD=${HCM_BACKEND_HCM_CLOUD}'
+      - 'HCM_URL_1=default:HCM_CLOUD'
+      - 'HCM_URL_2=/api:HCM_CORE'
+      - 'HCM_URL_3=/login:HCM_CORE'
+      - 'HCM_URL_4=/img:HCM_CORE'
+      - 'HCM_URL_5=/document:HCM_CORE'
+      - 'HCM_URL_6=/ws:HCM_CORE'
+
+
+  redis:
+    image: redis:latest
+    container_name: dev_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - /data
+
+  office-service:
+    image: registry.cn-beijing.aliyuncs.com/hcmcloud/hcm_office_server:latest
+    container_name: office-service
+    ports:
+      - "8006:8000"
+    volumes:
+      - ~/Documents/hcm_doc:/var/data/report_stock
+
+  hcm-cloud:
+    image: 'registry.cn-beijing.aliyuncs.com/hcmcloud/client_master:latest'
+    container_name: dev_hcm_cloud
+    ports:
+      - "8080:8080"
+
+
+  hcm-core:
+    image: 'registry.cn-beijing.aliyuncs.com/hcmcloud/server_master:latest'
+    container_name: dev_hcm_core
+    volumes:
+      - '/var/data/work_space'
+      - '/var/data/hcm_core_document'
+      - '/var/data/photo'
+      - '/var/data/template'
+      - '/var/data/log'
+      - '/var/data/hcm_sync'
+    environment:
+      - 'CONFIG_FILE: hcm_core_docker'
+      - 'DB=${DB}'
+      - 'REDIS_ADDRESS=${REDIS_ADDRESS}'
+      - 'REDIS_PORT=${REDIS_PORT}'
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REMOTE_ADDRESS=http://127.0.0.1'
+      - 'SUPPORT_SERVICE=open_api,redis,base,circle,recruit,org,emp,img,document'
+    ports:
+      - "8000:8000"
