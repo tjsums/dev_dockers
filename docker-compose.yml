@@ -5,22 +5,27 @@ services:
     container_name: dev_proxy
     ports:
       - "80:80"
+      - "443:443"
+      - "1936:1936"
     environment:
-      - 'HCM_BACKEND_HCM_CORE=${HCM_BACKEND_HCM_CORE}'
-      - 'HCM_BACKEND_HCM_CLOUD=${HCM_BACKEND_HCM_CLOUD}'
+      - 'HCM_BACKEND_HCM_CORE=hcm-core:8000'
+      - 'HCM_BACKEND_HCM_CLOUD=hcm-cloud:8080'
       - 'HCM_URL_1=default:HCM_CLOUD'
       - 'HCM_URL_2=/api:HCM_CORE'
       - 'HCM_URL_3=/login:HCM_CORE'
       - 'HCM_URL_4=/img:HCM_CORE'
       - 'HCM_URL_5=/document:HCM_CORE'
       - 'HCM_URL_6=/ws:HCM_CORE'
+    links:
+      - hcm-cloud
+      - hcm-core
 
 
   redis:
     image: redis:latest
     container_name: dev_redis
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379/tcp"
     volumes:
       - /data
 
@@ -35,8 +40,8 @@ services:
   hcm-cloud:
     image: 'registry.cn-beijing.aliyuncs.com/hcmcloud/client_master:latest'
     container_name: dev_hcm_cloud
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080/tcp"
 
 
   hcm-core:
@@ -51,11 +56,13 @@ services:
       - '/var/data/hcm_sync'
     environment:
       - 'CONFIG_FILE: hcm_core_docker'
-      - 'DB=${DB}'
-      - 'REDIS_ADDRESS=${REDIS_ADDRESS}'
-      - 'REDIS_PORT=${REDIS_PORT}'
-      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'DB=mysql://root:kingdee@192.168.199.171:3306/hcm_test?charset=utf8'
+      - 'REDIS_ADDRESS=redis'
+      - 'REDIS_PORT=6379'
+      - 'REDIS_PASSWORD='
       - 'REMOTE_ADDRESS=http://127.0.0.1'
       - 'SUPPORT_SERVICE=open_api,redis,base,circle,recruit,org,emp,img,document'
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000/tcp"
+    links:
+      - redis
