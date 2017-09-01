@@ -2,7 +2,8 @@ version: "2"
 services:
   docker-manager:
     image: portainer/portainer:latest
-    ports: "9000:9000"
+    ports:
+      - "9000:9000"
     volumes:
       - /data
       - "/var/run/docker.sock:/var/run/docker.sock"
